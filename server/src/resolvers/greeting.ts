@@ -5,6 +5,12 @@ import { Context } from "../types/Context";
 
 @Resolver()
 export class GreetingResolver {
+  // get all users
+  @Query(() => [User])
+  async users(): Promise<User[]> {
+    return await User.find();
+  }
+
   @Query((_returns) => String)
   @UseMiddleware(checkAuth)
   async hello(@Ctx() { user }: Context): Promise<string> {
