@@ -1,10 +1,11 @@
 import argon2 from "argon2";
-import { Arg, Mutation, Resolver } from "type-graphql";
+import { Context } from "../types/Context";
+import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
 import { User } from "../entities/User";
-import { LoginInput } from "../types/LoginInput";
 import { RegisterInput } from "../types/RegisterInput";
 import { UserMutationResponse } from "../types/UserMutationResponse";
-import { createToken } from "../utils/auth";
+import { createToken, sendRefreshToken } from "../utils/auth";
+import { LoginInput } from "../types/LoginInput";
 
 @Resolver()
 export class UserResolver {
@@ -35,30 +36,39 @@ export class UserResolver {
     };
   }
   // login
-  @Mutation((_returns) => UserMutationResponse)
-  async login(@Arg("loginInput") { username, password }: LoginInput): Promise<UserMutationResponse> {
+  @Mutation((_return) => UserMutationResponse)
+  async login(
+    @Arg("loginInput") { username, password }: LoginInput,
+    @Ctx() { res }: Context
+  ): Promise<UserMutationResponse> {
+    1;
     const existingUser = await User.findOne({ username });
     if (!existingUser) {
       return {
-        code: 404,
+        code: 400,
         success: false,
         message: "User not found",
       };
     }
-    const validPassword = await argon2.verify(existingUser.password, password);
-    if (!validPassword) {
+    1;
+
+    const isPasswordValid = await argon2.verify(existingUser.password, password);
+
+    if (!isPasswordValid) {
       return {
         code: 400,
         success: false,
-        message: "Invalid password",
+        message: "Incorrect password",
       };
     }
+    sendRefreshToken(res, existingUser);
     return {
       code: 200,
       success: true,
-      message: "User logged in",
+      message: "Logged in successfully",
       user: existingUser,
-      accsessToken: createToken(existingUser),
+      accessToken: createToken("accessToken", existingUser),
     };
   }
 }
+1;

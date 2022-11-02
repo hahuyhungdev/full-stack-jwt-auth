@@ -1,7 +1,7 @@
 import { useGetAllUsersQuery } from "../generated/graphql";
 
 const Home = () => {
-  const { data, loading, error } = useGetAllUsersQuery();
+  const { data, loading, error } = useGetAllUsersQuery({ fetchPolicy: "no-cache" });
   if (loading) {
     return <div>loading...</div>;
   }

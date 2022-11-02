@@ -9,6 +9,8 @@ import { buildSchema } from "type-graphql";
 import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import { GreetingResolver } from "./resolvers/greeting";
 import { UserResolver } from "./resolvers/user";
+import refreshTokenRouter from "./router/refreshTokenRouter";
+import cookieParser from "cookie-parser";
 
 const main = async () => {
   await createConnection({
@@ -20,9 +22,10 @@ const main = async () => {
     synchronize: true,
     entities: [User],
   });
-
   const app = express();
-
+  app.use(express.json());
+  app.use(cookieParser());
+  app.use("/refresh_token", refreshTokenRouter);
   const httpServer = createServer(app);
 
   const apolloServer = new ApolloServer({
@@ -36,7 +39,7 @@ const main = async () => {
 
   await apolloServer.start();
 
-  apolloServer.applyMiddleware({ app });
+  apolloServer.applyMiddleware({ app, cors: { origin: "http://localhost:3000", credentials: true } });
 
   const PORT = process.env.PORT || 4000;
 

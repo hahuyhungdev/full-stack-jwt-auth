@@ -12,5 +12,5 @@ export class UserMutationResponse implements IMutationResponse {
   user?: User;
 
   @Field({ nullable: true })
-  accsessToken?: string;
+  accessToken?: string;
 }
